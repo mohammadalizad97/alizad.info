@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohammad Alizadeh — Growth Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;
+  --gold:#B8960C;
+  --gold-lo:#B8960C22;
+  --gold-mid:#B8960C55;
+  --white:#F0EDE8;
+  --dim:#2A2420;
+  --grey:#5A4F48;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;cursor:none}
+
+/* CURSOR */
+#cur{width:6px;height:6px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cur-ring{width:30px;height:30px;border:1px solid var(--gold-mid);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s}
+body.hov #cur-ring{width:50px;height:50px;border-color:var(--gold)}
+
+/* CANVAS */
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* PANELS */
+#wrap{position:fixed;inset:0;z-index:2}
+.panel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:80px 60px;opacity:0;transition:opacity .8s ease;pointer-events:none}
+.panel.active{opacity:1;pointer-events:all}
+
+/* PROGRESS */
+#prog{position:fixed;bottom:0;left:0;height:2px;background:var(--gold);z-index:100;transition:width .7s ease;width:0}
+
+/* DOTS */
+#dots{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--grey);transition:all .3s;cursor:none}
+.dot.on{background:var(--gold);transform:scale(1.6)}
+
+/* PANEL 1 — HERO */
+.hero-name{font-weight:800;font-size:clamp(44px,7.5vw,92px);line-height:.92;letter-spacing:-3px;color:var(--white)}
+.hero-name .gold{color:var(--gold)}
+.hero-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--grey);margin-top:28px;font-weight:400}
+.scroll-hint{position:absolute;bottom:36px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);animation:pulse 2s ease infinite;font-weight:400}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:.8}}
+
+/* PANEL 2 — 3 BIG STATS */
+.stats3{display:flex;gap:0;width:100%;max-width:900px;justify-content:center}
+.stat3{flex:1;padding:0 40px;position:relative}
+.stat3+.stat3{border-left:1px solid var(--dim)}
+.s3num{font-weight:800;font-size:clamp(52px,8vw,100px);line-height:1;color:transparent;-webkit-text-stroke:1px var(--gold);transition:color .8s,-webkit-text-stroke .6s;letter-spacing:-2px}
+.s3num.lit{color:var(--gold);-webkit-text-stroke:0px}
+.s3title{font-size:13px;font-weight:600;color:var(--white);margin-top:14px;letter-spacing:.5px}
+.s3note{font-size:11px;color:var(--grey);margin-top:6px;letter-spacing:1px;font-weight:400}
+
+/* PANEL 3 — MANIFESTO */
+.manifesto{font-weight:700;font-size:clamp(28px,5vw,58px);line-height:1.2;max-width:720px}
+.manifesto .g{color:var(--gold)}
+.manifesto .d{color:var(--grey);font-weight:400}
+
+/* PANEL 4 — SOFT SKILLS */
+.skills4{display:grid;grid-template-columns:1fr 1fr;gap:1px;width:100%;max-width:800px;margin-top:8px}
+.sk4{padding:28px 32px;border:1px solid var(--dim);text-align:left;position:relative;overflow:hidden;transition:border-color .3s}
+.sk4::before{content:'';position:absolute;inset:0;background:var(--gold-lo);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.sk4:hover::before{transform:scaleX(1)}
+.sk4:hover{border-color:var(--gold)}
+.sk4-tag{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:600}
+.sk4-title{font-size:15px;font-weight:700;margin-bottom:8px;position:relative;line-height:1.3}
+.sk4-desc{font-size:11px;color:var(--grey);line-height:1.8;position:relative;font-weight:400}
+
+/* PANEL 5 — NUMBERS */
+.nums5{display:flex;gap:48px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.n5{text-align:center}
+.n5big{font-weight:800;font-size:clamp(32px,5vw,60px);color:var(--gold);line-height:1}
+.n5lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-top:10px;max-width:120px;font-weight:400}
+
+/* PANEL 6 — CTA */
+.cta-head{font-weight:800;font-size:clamp(36px,6vw,80px);letter-spacing:-2px;line-height:.95;margin-bottom:8px}
+.cta-sub{font-size:clamp(20px,3.5vw,42px);font-weight:400;color:var(--gold);margin-bottom:48px;letter-spacing:-1px}
+.clinks{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.cl{padding:13px 28px;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--gold);color:var(--gold);background:transparent;transition:all .25s;position:relative;overflow:hidden}
+.cl::before{content:'';position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .28s;z-index:0}
+.cl:hover::before{transform:scaleX(1)}
+.cl:hover{color:var(--bg);border-color:var(--gold)}
+.cl span{position:relative;z-index:1}
+/* Call = inverted: gold fill by default, outline on hover */
+.cl.call{background:var(--bg);color:var(--bg);border-color:var(--gold)}
+.cl.call::before{transform:scaleX(1)}
+.cl.call:hover::before{transform:scaleX(0)}
+.cl.call:hover{color:var(--gold)}
+
+.sec-lbl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;font-weight:600}
+
+@media(max-width:700px){
+  .panel{padding:80px 24px}
+  .stats3{flex-direction:column;gap:32px}
+  .stat3+.stat3{border-left:none;border-top:1px solid var(--dim)}
+  .stat3{padding:0}
+  .skills4{grid-template-columns:1fr}
+  .nums5{gap:28px}
+  .clinks{flex-direction:column;align-items:center}
+  .cl{width:200px;text-align:center}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<canvas id="cv"></canvas>
+<div id="dots"></div>
+<div id="prog"></div>
+
+<div id="wrap">
+
+  <!-- 1: HERO -->
+  <div class="panel active" data-i="0">
+    <div class="hero-name">MOHAMMAD<br><span class="gold">ALIZAD</span></div>
+    <div class="hero-tag">Growth Marketing · 9+ Years</div>
+    <div class="scroll-hint">scroll</div>
+  </div>
+
+  <!-- 2: 3 STATS -->
+  <div class="panel" data-i="1">
+    <div class="stats3">
+      <div class="stat3">
+        <div class="s3num" id="n1">2×</div>
+        <div class="s3title">More leads. Same budget.</div>
+        <div class="s3note">doubled in one quarter</div>
+      </div>
+      <div class="stat3">
+        <div class="s3num" id="n2">−33%</div>
+        <div class="s3title">Cost per acquisition.</div>
+        <div class="s3note">on a 500K-user campaign</div>
+      </div>
+      <div class="stat3">
+        <div class="s3num" id="n3">&lt;$1</div>
+        <div class="s3title">Cost per lead. International.</div>
+        <div class="s3note">target was $2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: MANIFESTO -->
+  <div class="panel" data-i="2">
+    <div class="manifesto">
+      <span class="d">Most marketers</span><br>
+      spend the budget.<br>
+      I make it <span class="g">work harder.</span>
+    </div>
+  </div>
+
+  <!-- 4: SKILLS -->
+  <div class="panel" data-i="3">
+    <div class="sec-lbl">What I do</div>
+    <div class="skills4">
+      <div class="sk4">
+        <div class="sk4-tag">Performance</div>
+        <div class="sk4-title">I turn ad spend into revenue.</div>
+        <div class="sk4-desc">Google Ads, Meta, programmatic. Full funnel. I fix what's broken and scale what works.</div>
+      </div>
+      <div class="sk4">
+        <div class="sk4-tag">Strategy</div>
+        <div class="sk4-title">I build systems, not just campaigns.</div>
+        <div class="sk4-desc">Channel mix, attribution, budget allocation tied to business outcomes.</div>
+      </div>
+      <div class="sk4">
+        <div class="sk4-tag">Growth</div>
+        <div class="sk4-title">I find the lever others miss.</div>
+        <div class="sk4-desc">SEO funnels, lifecycle automation, influencer attribution. Growth that compounds.</div>
+      </div>
+      <div class="sk4">
+        <div class="sk4-tag">Leadership</div>
+        <div class="sk4-title">I report to founders. I speak business.</div>
+        <div class="sk4-desc">Teams up to 20. Direct CEO advisory. Goals into results — fast.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5: NUMBERS -->
+  <div class="panel" data-i="4">
+    <div class="sec-lbl">By the numbers</div>
+    <div class="nums5">
+      <div class="n5"><div class="n5big"><span class="ctr" data-t="9" data-s="+">0</span></div><div class="n5lbl">Years in performance marketing</div></div>
+      <div class="n5"><div class="n5big">$10K<span style="font-size:.5em;color:var(--grey)">/mo</span></div><div class="n5lbl">Budgets managed monthly</div></div>
+      <div class="n5"><div class="n5big"><span class="ctr" data-t="50" data-s="%">0</span></div><div class="n5lbl">CAC reduction in 2 months</div></div>
+      <div class="n5"><div class="n5big"><span class="ctr" data-t="90" data-s="%">0</span></div><div class="n5lbl">Organic traffic growth</div></div>
+      <div class="n5"><div class="n5big"><span class="ctr" data-t="20" data-s="+">0</span></div><div class="n5lbl">Team members led</div></div>
+    </div>
+  </div>
+
+  <!-- 6: CTA -->
+  <div class="panel" data-i="5">
+    <div class="cta-head">You found the solution.</div>
+    <div class="cta-sub">Use it.</div>
+    <div class="clinks">
+      <a href="https://t.me/mohammad_sh_alizadeh" class="cl" target="_blank"><span>Telegram</span></a>
+      <a href="https://linkedin.com/in/mohammad-alizadeh-b569091a1/" class="cl" target="_blank"><span>LinkedIn</span></a>
+      <a href="mailto:mohammadalizad97@gmail.com" class="cl"><span>Email</span></a>
+      <a href="tel:+989124949790" class="cl call"><span>Call</span></a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=window.innerWidth/2,my=window.innerHeight/2,rx=mx,ry=my;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+document.querySelectorAll('a').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+// ── PANELS ──
+const panels=document.querySelectorAll('.panel');
+const TOTAL=panels.length;
+let cur_i=0,locked=false;
+
+const dotsEl=document.getElementById('dots');
+panels.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' on':'');
+  d.addEventListener('click',()=>goTo(i));
+  dotsEl.appendChild(d);
+});
+
+function goTo(idx){
+  if(idx<0||idx>=TOTAL||idx===cur_i||locked) return;
+  panels[cur_i].classList.remove('active');
+  cur_i=idx;
+  panels[cur_i].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur_i));
+  document.getElementById('prog').style.width=((cur_i/(TOTAL-1))*100)+'%';
+  onEnter(cur_i);
+  locked=true;
+  setTimeout(()=>locked=false,900);
+}
+
+function onEnter(idx){
+  if(idx===1){
+    setTimeout(()=>{document.getElementById('n1').classList.add('lit');document.getElementById('n2').classList.add('lit');document.getElementById('n3').classList.add('lit');},400);
+  }
+  if(idx===4){
+    panels[idx].querySelectorAll('.ctr').forEach(el=>{
+      if(el._d) return; el._d=true;
+      const t=+el.dataset.t,s=el.dataset.s||'',t0=performance.now(),dur=1400;
+      (function tick(now){const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3);el.textContent=Math.round(e*t)+s;if(p<1)requestAnimationFrame(tick)})(t0);
+    });
+  }
+  // update particle order level
+  orderLevel=idx/(TOTAL-1);
+}
+
+// scroll / touch / key
+let wacc=0;
+window.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(locked) return;
+  wacc+=e.deltaY;
+  if(Math.abs(wacc)>50){goTo(cur_i+(wacc>0?1:-1));wacc=0;}
+},{passive:false});
+
+let ty0=0;
+window.addEventListener('touchstart',e=>ty0=e.touches[0].clientY,{passive:true});
+window.addEventListener('touchend',e=>{const dy=ty0-e.changedTouches[0].clientY;if(Math.abs(dy)>40&&!locked)goTo(cur_i+(dy>0?1:-1));},{passive:true});
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight')goTo(cur_i+1);
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft')goTo(cur_i-1);
+});
+
+// ── PARTICLES ──
+const canvas=document.getElementById('cv');
+const ctx2=canvas.getContext('2d');
+let W,H;
+let orderLevel=0; // 0=chaos 1=sphere
+const N=220;
+let pts=[];
+
+function resize(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+  buildPts();
+}
+window.addEventListener('resize',resize);
+
+function buildPts(){
+  pts=[];
+  for(let i=0;i<N;i++){
+    pts.push({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+      r:Math.random()*1.4+.3,
+      phase:Math.random()*Math.PI*2,
+      speed:Math.random()*.008+.002,
+      orbitR:80+Math.random()*Math.min(W,H)*.35,
+      orbitA:Math.random()*Math.PI*2,
+    });
+  }
+}
+
+let sphereRot=0;
+function sphereXY(i,total){
+  const phi=Math.acos(1-2*(i+.5)/total);
+  const theta=Math.PI*(1+Math.sqrt(5))*i + sphereRot;
+  const R=Math.min(W,H)*.2;
+  const sx=Math.sin(phi)*Math.cos(theta);
+  const sy=Math.cos(phi);
+  const sz=Math.sin(phi)*Math.sin(theta);
+  return{x:W/2+R*sx, y:H/2+R*sy, z:sz};
+}
+
+let frame=0;
+function draw(){
+  requestAnimationFrame(draw);
+  ctx2.clearRect(0,0,W,H);
+  frame++;
+
+  const ol=orderLevel;
+  sphereRot+=0.006*ol;
+  const lerpSpeed=ol>.95?.12:.025+ol*.04;
+
+  pts.forEach((p,i)=>{
+    // chaos target: gentle orbit
+    p.phase+=p.speed;
+    const cx=W/2+Math.cos(p.phase+p.orbitA)*p.orbitR;
+    const cy=H/2+Math.sin(p.phase+p.orbitA)*p.orbitR*.55;
+
+    // sphere target
+    const sp=sphereXY(i,N);
+
+    // mouse repulsion (chaos only)
+    const mdx=p.x-mx, mdy=p.y-my;
+    const md=Math.sqrt(mdx*mdx+mdy*mdy)||1;
+    const repel=ol<.8&&md<120?((120-md)/120)*1.5:0;
+
+    // blend target
+    const tx=cx*(1-ol)+sp.x*ol + mdx/md*(repel||0)*20;
+    const ty=cy*(1-ol)+sp.y*ol + mdy/md*(repel||0)*20;
+
+    p.x+=(tx-p.x)*lerpSpeed;
+    p.y+=(ty-p.y)*lerpSpeed;
+
+    const depth=(sp.z+1)/2; // 0 = back, 1 = front
+    const alpha=ol>.8
+      ?.12+depth*.5+Math.sin(frame*.025+i*.3)*.06
+      :.08+ol*.12+Math.sin(frame*.02+p.phase)*.04;
+    const rad=ol>.8?p.r*(.5+depth*1.1):p.r;
+
+    ctx2.beginPath();
+    ctx2.arc(p.x,p.y,rad,0,Math.PI*2);
+    ctx2.fillStyle=`rgba(184,150,12,${alpha})`;
+    ctx2.fill();
+  });
+
+  // sphere connections on last panel
+  if(ol>.7){
+    const thresh=55*(ol-.7)/.3;
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<thresh){
+          ctx2.beginPath();
+          ctx2.moveTo(pts[i].x,pts[i].y);
+          ctx2.lineTo(pts[j].x,pts[j].y);
+          ctx2.strokeStyle=`rgba(184,150,12,${(1-d/thresh)*(ol-.7)/.3*.18})`;
+          ctx2.lineWidth=.4;
+          ctx2.stroke();
+        }
+      }
+    }
+  }
+}
+
+resize();
+draw();
+</script>
+</body>
+</html>
