@@ -40,7 +40,7 @@ body.hov #cur-ring{width:50px;height:50px;border-color:var(--gold)}
 .dot.on{background:var(--gold);transform:scale(1.6)}
 
 /* PANEL 1 — HERO */
-.hero-name{font-weight:800;font-size:clamp(44px,7.5vw,92px);line-height:.92;letter-spacing:-3px;color:var(--white)}
+.hero-name{font-weight:800;font-size:clamp(34px,5.5vw,70px);line-height:.96;letter-spacing:-2px;color:var(--white);max-width:100%}
 .hero-name .gold{color:var(--gold)}
 .hero-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--grey);margin-top:28px;font-weight:400}
 .scroll-hint{position:absolute;bottom:36px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);animation:pulse 2s ease infinite;font-weight:400}
@@ -293,7 +293,7 @@ function buildPts(){
     pts.push({
       x:Math.random()*W, y:Math.random()*H,
       vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
-      r:Math.random()*1.4+.3,
+      r:Math.random()*1.7+.6,
       phase:Math.random()*Math.PI*2,
       speed:Math.random()*.008+.002,
       orbitR:80+Math.random()*Math.min(W,H)*.35,
@@ -346,8 +346,8 @@ function draw(){
 
     const depth=(sp.z+1)/2; // 0 = back, 1 = front
     const alpha=ol>.8
-      ?.12+depth*.5+Math.sin(frame*.025+i*.3)*.06
-      :.08+ol*.12+Math.sin(frame*.02+p.phase)*.04;
+      ?.2+depth*.5+Math.sin(frame*.025+i*.3)*.07
+      :.22+ol*.12+Math.sin(frame*.02+p.phase)*.05;
     const rad=ol>.8?p.r*(.5+depth*1.1):p.r;
 
     ctx2.beginPath();
@@ -356,21 +356,24 @@ function draw(){
     ctx2.fill();
   });
 
-  // sphere connections on last panel
-  if(ol>.7){
-    const thresh=55*(ol-.7)/.3;
-    for(let i=0;i<pts.length;i++){
-      for(let j=i+1;j<pts.length;j++){
-        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<thresh){
-          ctx2.beginPath();
-          ctx2.moveTo(pts[i].x,pts[i].y);
-          ctx2.lineTo(pts[j].x,pts[j].y);
-          ctx2.strokeStyle=`rgba(184,150,12,${(1-d/thresh)*(ol-.7)/.3*.18})`;
-          ctx2.lineWidth=.4;
-          ctx2.stroke();
-        }
+  // node network connections — subtle on every panel, intensifying into the sphere
+  const baseThresh=80;
+  const sphereThresh=ol>.7?55*(ol-.7)/.3:0;
+  const thresh=Math.max(baseThresh,sphereThresh);
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<thresh){
+        const prox=1-d/thresh;
+        const base=prox*.10;
+        const boost=ol>.7?prox*(ol-.7)/.3*.12:0;
+        ctx2.beginPath();
+        ctx2.moveTo(pts[i].x,pts[i].y);
+        ctx2.lineTo(pts[j].x,pts[j].y);
+        ctx2.strokeStyle=`rgba(184,150,12,${base+boost})`;
+        ctx2.lineWidth=.5;
+        ctx2.stroke();
       }
     }
   }
